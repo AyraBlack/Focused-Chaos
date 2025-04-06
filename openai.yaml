@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: Supabase GPT Entries API
+  description: Full CRUD access to the `gpt_entries` table in Supabase, with filtering and sorting support.
+  version: 1.0.0
+
+servers:
+  - url: https://bnhryudpqfiqardovwdq.supabase.co/rest/v1
+    description: Supabase REST API
+
+paths:
+  /gpt_entries:
+    get:
+      operationId: listGptEntries
+      summary: Get all entries with optional filtering and sorting
+      parameters:
+        - name: select
+          in: query
+          required: false
+          description: Fields to return
+          schema:
+            type: string
+            example: '*'
+        - name: tags
+          in: query
+          required: false
+          description: Filter entries by tag
+          schema:
+            type: string
+            example: eq.chaos
+        - name: order
+          in: query
+          required: false
+          description: Sort order
+          schema:
+            type: string
+            example: created_at.desc
+      responses:
+        '200':
+          description: A list of GPT entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GptEntry'
+
+    post:
+      operationId: createGptEntry
+      summary: Create a new GPT entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewGptEntry'
+      responses:
+        '201':
+          description: Entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GptEntry'
+
+  /gpt_entries/{id}:
+    patch:
+      operationId: updateGptEntry
+      summary: Update an entry by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the entry to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartialGptEntry'
+      responses:
+        '204':
+          description: Entry updated
+
+    delete:
+      operationId: deleteGptEntry
+      summary: Delete an entry by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the entry to delete
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Entry deleted
+
+components:
+  schemas:
+    GptEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+        body:
+          type: string
+        tags:
+          type: string
+        source:
+          type: string
+
+    NewGptEntry:
+      type: object
+      required:
+        - title
+        - body
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        tags:
+          type: string
+        source:
+          type: string
+
+    PartialGptEntry:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        tags:
+          type: string
+        source:
+          type: string
+
+  securitySchemes:
+    supabaseKey:
+      type: apiKey
+      in: header
+      name: apikey
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - supabaseKey: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaHJ5dWRwcWZpcWFyZG92d2RxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM3MTU2ODMsImV4cCI6MjA1OTI5MTY4M30.TPCGoljQdrPr0G0Z-Z1EuZFaAWIjUt0d5tPVjFjiuCo]
+  - bearerAuth: []
